@@ -14,8 +14,10 @@ import {
   AlertTriangle,
   TrendingUp,
   Upload,
+  Download,
 } from "lucide-react";
 import { formatRupiahInput, parseRupiahInput, money } from "../../lib/format";
+import * as XLSX from "xlsx";
 
 export type Product = {
   id: string;
@@ -276,6 +278,37 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
     router.refresh();
   }
 
+  function exportToExcel() {
+    const wb = XLSX.utils.book_new();
+    const wsData = XLSX.utils.aoa_to_sheet([
+      ["KATALOG PRODUK AKTIF"],
+      [`Dicetak: ${new Date().toLocaleString("id-ID")} · Total: ${products.length} produk`],
+      [],
+      ["Nama Produk", "SKU", "Kategori", "Harga Jual (Rp)", "Harga Modal/HPP (Rp)", "Laba/Unit (Rp)", "Margin (%)", "Stok Saat Ini", "Stok Min.", "Satuan"],
+      ...products.map((p) => {
+        const profit = p.price - p.cost;
+        const margin = p.price > 0 ? Math.round((profit / p.price) * 100) : 0;
+        return [
+          p.name,
+          p.sku,
+          p.category,
+          p.price,
+          p.cost,
+          profit,
+          `${margin}%`,
+          p.stock,
+          p.minStock,
+          p.unit,
+        ];
+      }),
+    ]);
+    wsData["!cols"] = [
+      { wch: 30 }, { wch: 16 }, { wch: 20 }, { wch: 18 }, { wch: 20 }, { wch: 16 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 10 },
+    ];
+    XLSX.utils.book_append_sheet(wb, wsData, "Katalog Produk");
+    XLSX.writeFile(wb, `Katalog_Produk_${new Date().toLocaleDateString("id-ID").replace(/\//g, "-")}.xlsx`);
+  }
+
   return (
     <AppShell active="Produk">
       <div className="mx-auto max-w-[1440px] space-y-6 p-5 sm:p-8 lg:p-10">
@@ -286,20 +319,29 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
               Kelola harga jual, harga pokok (HPP), satuan, dan stok produk percetakan.
             </p>
           </div>
-          <button
-            onClick={() => {
-              setFormError("");
-              setAddPrice("");
-              setAddCost("");
-              setAddImageFile(null);
-              setAddImagePreview("");
-              setShowAddModal(true);
-            }}
-            className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
-          >
-            <Plus aria-hidden="true" size={18} />
-            <span>Tambah Produk Baru</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={exportToExcel}
+              className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+            >
+              <Download aria-hidden="true" size={16} />
+              <span>Export Excel</span>
+            </button>
+            <button
+              onClick={() => {
+                setFormError("");
+                setAddPrice("");
+                setAddCost("");
+                setAddImageFile(null);
+                setAddImagePreview("");
+                setShowAddModal(true);
+              }}
+              className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition"
+            >
+              <Plus aria-hidden="true" size={18} />
+              <span>Tambah Produk Baru</span>
+            </button>
+          </div>
         </div>
 
         {/* Search & Category Filter */}

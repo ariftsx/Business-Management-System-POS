@@ -14,10 +14,13 @@ import {
   Edit2,
   Lock,
   CheckCircle2,
+  Download,
+  Printer,
 } from "lucide-react";
 import { AppShell } from "../../components/app-shell";
 import { createClient } from "../../lib/supabase/client";
 import { money, formatRupiahInput, parseRupiahInput } from "../../lib/format";
+import * as XLSX from "xlsx";
 
 export type ExpenseItem = {
   id: string;
@@ -248,6 +251,54 @@ export default function FinanceClient({
   const currentExpenseTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
   const netCashflow = revenue - currentExpenseTotal;
 
+  function exportToExcel() {
+    const wb = XLSX.utils.book_new();
+    const printDate = new Date().toLocaleString("id-ID");
+
+    // Sheet 1: Ringkasan Keuangan
+    const wsSum = XLSX.utils.aoa_to_sheet([
+      ["LAPORAN KEUANGAN BISNIS"],
+      [`Dicetak: ${printDate}`],
+      [],
+      ["Keterangan", "Nominal (Rp)"],
+      ["Total Omzet (Penjualan)", revenue],
+      ["Modal Terjual / HPP", -cogs],
+      ["Laba Kotor", gross],
+      ["Beban Pengeluaran Operasional", -currentExpenseTotal],
+      ["Arus Kas Riil Bersih", netCashflow],
+    ]);
+    wsSum["!cols"] = [{ wch: 36 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, wsSum, "Ringkasan Keuangan");
+
+    // Sheet 2: Rincian Pengeluaran
+    const wsExp = XLSX.utils.aoa_to_sheet([
+      ["RINCIAN DATA PENGELUARAN"],
+      [`Dicetak: ${printDate}`],
+      [],
+      ["Tanggal", "Kategori", "Deskripsi", "Metode", "Nominal (Rp)", "Catatan"],
+      ...expenses.map((e) => [
+        e.expense_date,
+        e.category,
+        e.description,
+        e.payment_method,
+        e.amount,
+        e.notes ?? "-",
+      ]),
+      [],
+      ["", "", "", "TOTAL", currentExpenseTotal, ""],
+    ]);
+    wsExp["!cols"] = [
+      { wch: 14 }, { wch: 26 }, { wch: 36 }, { wch: 12 }, { wch: 16 }, { wch: 30 },
+    ];
+    XLSX.utils.book_append_sheet(wb, wsExp, "Rincian Pengeluaran");
+
+    XLSX.writeFile(wb, `Laporan_Keuangan_${new Date().toLocaleDateString("id-ID").replace(/\//g, "-")}.xlsx`);
+  }
+
+  function handlePrint() {
+    window.print();
+  }
+
   return (
     <AppShell active="Keuangan">
       <div className="mx-auto max-w-[1440px] space-y-6 p-4 sm:p-8 lg:p-10 pb-28">
@@ -258,17 +309,33 @@ export default function FinanceClient({
               Pantau omzet, modal pokok (HPP), laba kotor, beban pengeluaran, dan arus kas bersih.
             </p>
           </div>
-          <button
-            onClick={() => {
-              setErrorMsg("");
-              setAmountInput("");
-              setShowAddModal(true);
-            }}
-            className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
-          >
-            <Plus size={17} />
-            <span>Catat Pengeluaran Baru</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handlePrint}
+              className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+            >
+              <Printer size={16} />
+              <span>Cetak PDF</span>
+            </button>
+            <button
+              onClick={exportToExcel}
+              className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+            >
+              <Download size={16} />
+              <span>Export Excel</span>
+            </button>
+            <button
+              onClick={() => {
+                setErrorMsg("");
+                setAmountInput("");
+                setShowAddModal(true);
+              }}
+              className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
+            >
+              <Plus size={17} />
+              <span>Catat Pengeluaran Baru</span>
+            </button>
+          </div>
         </div>
 
         {successMsg && (

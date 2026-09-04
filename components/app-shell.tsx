@@ -351,16 +351,6 @@ export function AppShell({
               </h1>
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/kasir"
-              className="flex min-h-10 items-center gap-2 rounded-lg bg-blue-600 px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700 sm:min-h-11 sm:px-4 sm:text-sm"
-            >
-              <ShoppingCart aria-hidden="true" size={17} />
-              <span>Transaksi Baru</span>
-            </Link>
-          </div>
         </header>
 
         {children}

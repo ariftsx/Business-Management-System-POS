@@ -5,9 +5,21 @@ export default async function TransactionsPage() {
   const supabase = await createClient();
   const { data: transactionsData } = await supabase
     .from("sales_transactions")
-    .select("id, transaction_number, status, payment_method, total, created_at")
+    .select(`
+      id,
+      transaction_number,
+      status,
+      payment_method,
+      total,
+      created_at,
+      transaction_items (
+        product_name,
+        quantity,
+        selling_price
+      )
+    `)
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(200);
 
   const transactions: TransactionListItem[] = (transactionsData ?? []).map((t) => ({
     id: t.id,
@@ -16,6 +28,11 @@ export default async function TransactionsPage() {
     payment_method: t.payment_method,
     total: Number(t.total || 0),
     created_at: t.created_at,
+    items: (t.transaction_items ?? []).map((item: any) => ({
+      product_name: item.product_name,
+      quantity: Number(item.quantity),
+      selling_price: Number(item.selling_price),
+    })),
   }));
 
   return <TransactionsClient initialTransactions={transactions} />;

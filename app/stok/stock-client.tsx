@@ -1,10 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDownToLine, ArrowUpFromLine, Package, RefreshCw, Plus, X, AlertTriangle } from "lucide-react";
+import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Package,
+  RefreshCw,
+  Plus,
+  X,
+  AlertTriangle,
+  Search,
+  ChevronDown,
+  Download,
+} from "lucide-react";
 import { AppShell } from "../../components/app-shell";
 import { createClient } from "../../lib/supabase/client";
+import * as XLSX from "xlsx";
 
 export type StockProduct = {
   id: string;
@@ -27,8 +39,145 @@ export type StockMovement = {
   products: { name: string; sku: string } | null;
 };
 
-const quantity = (value: number) =>
+const qty = (value: number) =>
   new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 }).format(value);
+
+/** Searchable Combobox for product selection */
+function ProductCombobox({
+  products,
+  value,
+  onChange,
+}: {
+  products: StockProduct[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const selected = products.find((p) => p.id === value);
+
+  const filtered =
+    search.trim() === ""
+      ? products
+      : products.filter(
+          (p) =>
+            p.name.toLowerCase().includes(search.toLowerCase()) ||
+            p.sku.toLowerCase().includes(search.toLowerCase()) ||
+            p.category.toLowerCase().includes(search.toLowerCase())
+        );
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch("");
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative">
+      {/* Trigger button */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full min-h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 outline-none focus:border-blue-500 flex items-center justify-between gap-2"
+      >
+        <span className="truncate">
+          {selected ? (
+            <>
+              <span className="font-bold">{selected.name}</span>
+              <span className="ml-2 text-xs text-slate-400">
+                ({selected.sku}) · Stok: {qty(selected.current_stock)} {selected.unit}
+              </span>
+            </>
+          ) : (
+            <span className="text-slate-400">Pilih produk...</span>
+          )}
+        </span>
+        <ChevronDown
+          size={16}
+          className={`shrink-0 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-xl border border-slate-200 bg-white shadow-xl">
+          {/* Search input */}
+          <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2">
+            <Search size={14} className="shrink-0 text-slate-400" />
+            <input
+              autoFocus
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Ketik nama atau SKU produk..."
+              className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
+          {/* Options */}
+          <div className="max-h-56 overflow-y-auto">
+            {filtered.length === 0 ? (
+              <p className="p-4 text-center text-xs text-slate-400">Produk tidak ditemukan</p>
+            ) : (
+              filtered.map((p) => {
+                const isLow = p.current_stock <= p.minimum_stock;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => {
+                      onChange(p.id);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition hover:bg-blue-50 ${
+                      value === p.id ? "bg-blue-50" : ""
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-slate-800">{p.name}</p>
+                      <p className="text-xs text-slate-400">
+                        {p.sku} · {p.category}
+                      </p>
+                    </div>
+                    <div className="ml-3 shrink-0 text-right">
+                      <p className={`text-sm font-bold ${isLow ? "text-amber-600" : "text-slate-700"}`}>
+                        {qty(p.current_stock)} {p.unit}
+                      </p>
+                      {isLow && (
+                        <p className="text-[10px] font-semibold text-amber-500">Menipis</p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+          <div className="border-t border-slate-100 px-3 py-1.5 text-[10px] text-slate-400">
+            {filtered.length} dari {products.length} produk
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function StockClient({
   initialProducts,
@@ -44,7 +193,6 @@ export default function StockClient({
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Form states
   const [selectedProductId, setSelectedProductId] = useState(
     initialProducts.length > 0 ? initialProducts[0].id : ""
   );
@@ -58,7 +206,6 @@ export default function StockClient({
   async function handleAdjustStock(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg("");
-
     const numQty = Number(qtyInput);
     if (!selectedProductId) {
       setErrorMsg("Pilih produk terlebih dahulu.");
@@ -68,41 +215,86 @@ export default function StockClient({
       setErrorMsg("Jumlah harus lebih besar dari 0.");
       return;
     }
-
     const isReduction = movementType === "DAMAGE";
     const delta = isReduction ? -Math.abs(numQty) : Math.abs(numQty);
-
     if (isReduction && selectedProduct && selectedProduct.current_stock < Math.abs(delta)) {
-      setErrorMsg(`Stok tidak mencukupi untuk pengurangan. Stok saat ini: ${selectedProduct.current_stock}`);
+      setErrorMsg(`Stok tidak mencukupi. Stok saat ini: ${selectedProduct.current_stock}`);
       return;
     }
-
     setSubmitting(true);
     const supabase = createClient();
-
     const { error } = await supabase.rpc("adjust_stock", {
       product_id: selectedProductId,
       amount: delta,
       movement: movementType,
       note: reasonInput.trim() || null,
     });
-
     setSubmitting(false);
-
     if (error) {
-      setErrorMsg(error.message || "Gagal menyesuaikan stok. Silakan coba lagi.");
+      setErrorMsg(error.message || "Gagal menyesuaikan stok.");
       return;
     }
-
     setShowModal(false);
     setQtyInput("");
     setReasonInput("");
     router.refresh();
   }
 
+  function exportToExcel() {
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Ringkasan Stok Produk
+    const stockHeader = [
+      ["LAPORAN RINGKASAN STOK PRODUK"],
+      [`Dicetak: ${new Date().toLocaleString("id-ID")}`],
+      [],
+      ["Nama Produk", "SKU", "Kategori", "Stok Saat Ini", "Stok Minimum", "Satuan", "Status"],
+    ];
+    const stockRows = products.map((p) => [
+      p.name,
+      p.sku,
+      p.category,
+      p.current_stock,
+      p.minimum_stock,
+      p.unit,
+      p.current_stock <= p.minimum_stock ? "MENIPIS" : "Tersedia",
+    ]);
+    const wsStock = XLSX.utils.aoa_to_sheet([...stockHeader, ...stockRows]);
+    wsStock["!cols"] = [
+      { wch: 30 }, { wch: 16 }, { wch: 18 }, { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 12 },
+    ];
+    XLSX.utils.book_append_sheet(wb, wsStock, "Ringkasan Stok");
+
+    // Sheet 2: Riwayat Movement
+    const movHeader = [
+      ["RIWAYAT PERUBAHAN STOK"],
+      [`Dicetak: ${new Date().toLocaleString("id-ID")}`],
+      [],
+      ["Tanggal", "Produk", "SKU", "Jenis", "Jumlah", "Stok Sebelum", "Stok Sesudah", "Catatan"],
+    ];
+    const movRows = movements.map((m) => [
+      new Date(m.created_at).toLocaleString("id-ID"),
+      m.products?.name ?? "Produk",
+      m.products?.sku ?? "-",
+      m.movement_type,
+      m.quantity,
+      m.stock_before,
+      m.stock_after,
+      m.reason ?? "-",
+    ]);
+    const wsMov = XLSX.utils.aoa_to_sheet([...movHeader, ...movRows]);
+    wsMov["!cols"] = [
+      { wch: 20 }, { wch: 28 }, { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 14 }, { wch: 14 }, { wch: 30 },
+    ];
+    XLSX.utils.book_append_sheet(wb, wsMov, "Riwayat Stok");
+
+    XLSX.writeFile(wb, `Laporan_Stok_${new Date().toLocaleDateString("id-ID").replace(/\//g, "-")}.xlsx`);
+  }
+
   return (
     <AppShell active="Stok">
       <div className="mx-auto max-w-[1440px] space-y-6 p-5 sm:p-8 lg:p-10">
+        {/* Header */}
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <h2 className="text-lg font-bold">Manajemen Stok</h2>
@@ -110,13 +302,22 @@ export default function StockClient({
               Pantau jumlah stok dan alasan setiap perubahan.
             </p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
-          >
-            <Plus size={17} />
-            <span>Tambah / Sesuaikan Stok</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={exportToExcel}
+              className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+            >
+              <Download size={16} />
+              <span>Export Excel</span>
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
+            >
+              <Plus size={17} />
+              <span>Tambah / Sesuaikan Stok</span>
+            </button>
+          </div>
         </div>
 
         {/* Metric Cards */}
@@ -138,7 +339,7 @@ export default function StockClient({
           </article>
         </div>
 
-        {/* Content sections */}
+        {/* Content Grid */}
         <div className="grid gap-6 xl:grid-cols-[1fr_1.2fr]">
           {/* Products Summary */}
           <section className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -155,7 +356,11 @@ export default function StockClient({
                       className="flex items-center justify-between gap-4 p-4 hover:bg-slate-50/50 transition"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                        <span
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                            isLow ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-600"
+                          }`}
+                        >
                           <Package size={19} />
                         </span>
                         <div className="min-w-0">
@@ -166,15 +371,11 @@ export default function StockClient({
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p
-                          className={`font-bold ${
-                            isLow ? "text-amber-600" : "text-slate-800"
-                          }`}
-                        >
-                          {quantity(Number(product.current_stock))} {product.unit}
+                        <p className={`font-bold ${isLow ? "text-amber-600" : "text-slate-800"}`}>
+                          {qty(Number(product.current_stock))} {product.unit}
                         </p>
                         <p className="text-xs text-slate-400">
-                          Min. {quantity(Number(product.minimum_stock))}
+                          Min. {qty(Number(product.minimum_stock))}
                         </p>
                       </div>
                     </div>
@@ -208,6 +409,13 @@ export default function StockClient({
               <div className="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
                 {movements.map((movement) => {
                   const isPositive = Number(movement.quantity) > 0;
+                  const dateFormatted = new Intl.DateTimeFormat("id-ID", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }).format(new Date(movement.created_at));
                   return (
                     <div
                       key={movement.id}
@@ -216,41 +424,31 @@ export default function StockClient({
                       <div className="flex items-center gap-3 min-w-0">
                         <span
                           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                            isPositive
-                              ? "bg-green-50 text-green-600"
-                              : "bg-red-50 text-red-600"
+                            isPositive ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
                           }`}
                         >
-                          {isPositive ? (
-                            <ArrowDownToLine size={16} />
-                          ) : (
-                            <ArrowUpFromLine size={16} />
-                          )}
+                          {isPositive ? <ArrowDownToLine size={16} /> : <ArrowUpFromLine size={16} />}
                         </span>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-bold text-slate-900">
                             {movement.products?.name ?? "Produk"}
                           </p>
                           <p className="text-xs text-slate-400">
-                            <span className="font-semibold text-slate-600">
-                              {movement.movement_type}
-                            </span>{" "}
-                            · {movement.reason ?? "Tanpa catatan"}
+                            <span className="font-semibold text-slate-600">{movement.movement_type}</span>
+                            {" · "}
+                            {movement.reason ?? "Tanpa catatan"}
+                            {" · "}
+                            {dateFormatted}
                           </p>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p
-                          className={`font-bold ${
-                            isPositive ? "text-green-600" : "text-red-600"
-                          }`}
-                        >
+                        <p className={`font-bold ${isPositive ? "text-green-600" : "text-red-600"}`}>
                           {isPositive ? "+" : ""}
-                          {quantity(Number(movement.quantity))}
+                          {qty(Number(movement.quantity))}
                         </p>
                         <p className="text-xs text-slate-400">
-                          {quantity(Number(movement.stock_before))} →{" "}
-                          {quantity(Number(movement.stock_after))}
+                          {qty(Number(movement.stock_before))} → {qty(Number(movement.stock_after))}
                         </p>
                       </div>
                     </div>
@@ -274,9 +472,7 @@ export default function StockClient({
             >
               <div className="mb-5 flex items-start justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">
-                    Tambah / Sesuaikan Stok
-                  </h3>
+                  <h3 className="text-lg font-bold text-slate-900">Tambah / Sesuaikan Stok</h3>
                   <p className="mt-1 text-xs text-slate-500">
                     Catat penambahan atau penyesuaian stok produk secara akurat.
                   </p>
@@ -291,23 +487,16 @@ export default function StockClient({
               </div>
 
               <div className="space-y-4">
-                {/* Product Select */}
+                {/* Searchable Product Combobox */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                     Pilih Produk *
                   </label>
-                  <select
-                    required
+                  <ProductCombobox
+                    products={products}
                     value={selectedProductId}
-                    onChange={(e) => setSelectedProductId(e.target.value)}
-                    className="w-full min-h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 outline-none focus:border-blue-500"
-                  >
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({p.sku}) — Stok saat ini: {p.current_stock} {p.unit}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setSelectedProductId}
+                  />
                 </div>
 
                 {/* Movement Type */}
@@ -355,8 +544,7 @@ export default function StockClient({
                   />
                   {selectedProduct && (
                     <p className="mt-1 text-xs text-slate-400">
-                      Stok saat ini: {selectedProduct.current_stock} {selectedProduct.unit} →
-                      Setelah simpan:{" "}
+                      Stok saat ini: {selectedProduct.current_stock} {selectedProduct.unit} → Setelah simpan:{" "}
                       <span className="font-bold text-slate-700">
                         {movementType === "DAMAGE"
                           ? selectedProduct.current_stock - Number(qtyInput || 0)
@@ -367,7 +555,7 @@ export default function StockClient({
                   )}
                 </div>
 
-                {/* Reason / Note */}
+                {/* Reason */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                     Alasan / Catatan
