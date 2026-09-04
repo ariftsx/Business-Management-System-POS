@@ -1,8 +1,27 @@
+import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase/server";
 import UsersClient, { type UserProfileItem } from "./users-client";
 
 export default async function UsersPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: myProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (myProfile?.role !== "SUPER_ADMIN") {
+    redirect("/");
+  }
+
   const { data: profilesData } = await supabase
     .from("profiles")
     .select("id, full_name, role, is_active, created_at")

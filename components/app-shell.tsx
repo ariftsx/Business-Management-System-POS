@@ -23,9 +23,13 @@ import {
   PanelLeftOpen,
 } from "lucide-react";
 
+import { createClient } from "../lib/supabase/client";
 import { UserProfileMenu } from "./user-profile-menu";
 
-const groups = [
+const groups: {
+  label: string;
+  items: [string, LucideIcon, string, boolean?][];
+}[] = [
   {
     label: "UTAMA",
     items: [
@@ -52,7 +56,7 @@ const groups = [
     label: "SISTEM",
     items: [
       ["Pengaturan", Settings, "/pengaturan"],
-      ["Pengguna", Users, "/pengguna"],
+      ["Pengguna", Users, "/pengguna", true], // adminOnly
     ],
   },
 ];
@@ -66,6 +70,12 @@ export function AppShell({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("ktm_user_role");
+    }
+    return null;
+  });
 
   // Restore collapsed preference from localStorage
   useEffect(() => {
@@ -73,7 +83,37 @@ export function AppShell({
     if (saved === "true") {
       setCollapsed(true);
     }
+
+    const cached = sessionStorage.getItem("ktm_user_role");
+    if (cached) setUserRole(cached);
+
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single()
+          .then(({ data }) => {
+            if (data) {
+              setUserRole(data.role);
+              sessionStorage.setItem("ktm_user_role", data.role);
+            }
+          });
+      }
+    });
   }, []);
+
+  const filteredGroups = groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(([, , , adminOnly]) => {
+        if (adminOnly && userRole !== "SUPER_ADMIN") return false;
+        return true;
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
@@ -149,7 +189,7 @@ export function AppShell({
           className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-6"
           aria-label="Navigasi utama"
         >
-          {groups.map((group) => (
+          {filteredGroups.map((group) => (
             <div key={group.label}>
               {!collapsed ? (
                 <p className="mb-2 px-3 text-[10px] font-bold tracking-[0.14em] text-slate-400">
@@ -239,7 +279,7 @@ export function AppShell({
             </div>
 
             <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-              {groups.map((group) => (
+              {filteredGroups.map((group) => (
                 <div key={group.label}>
                   <p className="mb-2 px-3 text-[10px] font-bold tracking-[0.14em] text-slate-400">
                     {group.label}

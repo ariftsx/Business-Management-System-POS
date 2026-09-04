@@ -22,11 +22,13 @@ export function UserProfileMenu({ compact = false }: { compact?: boolean }) {
           .then(({ data }) => {
             if (data) {
               setProfile(data);
+              sessionStorage.setItem("ktm_user_role", data.role);
             } else {
               setProfile({
                 full_name: user.email?.split("@")[0] ?? "Pengguna",
                 role: "USER",
               });
+              sessionStorage.setItem("ktm_user_role", "USER");
             }
           });
       }
@@ -36,6 +38,7 @@ export function UserProfileMenu({ compact = false }: { compact?: boolean }) {
   async function handleLogout() {
     if (loading) return;
     setLoading(true);
+    sessionStorage.removeItem("ktm_user_role");
     const supabase = createClient();
     await supabase.auth.signOut();
     router.replace("/login");
