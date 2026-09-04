@@ -13,8 +13,16 @@ export default function LoginPage() {
 
   async function login(formData: FormData) {
     setLoading(true); setError("");
-    const { error: signInError } = await createClient().auth.signInWithPassword({ email: String(formData.get("email")), password: String(formData.get("password")) });
-    if (signInError) { setError("Email atau password belum benar. Silakan coba lagi."); setLoading(false); return; }
+    const { error: signInError } = await createClient().auth.signInWithPassword({ email: String(formData.get("email")).trim(), password: String(formData.get("password")) });
+    if (signInError) {
+      if (signInError.status && signInError.status >= 500) {
+        setError("Terjadi kendala pada server autentikasi. Silakan coba sesaat lagi.");
+      } else {
+        setError("Email atau password belum benar. Silakan coba lagi.");
+      }
+      setLoading(false);
+      return;
+    }
     router.replace("/"); router.refresh();
   }
 
