@@ -21,7 +21,7 @@ export default async function SettingsPage() {
     dana_account_name: data?.dana_account_name ?? "",
     qris_image_url: data?.qris_image_url ?? "",
     logo_url: data?.logo_url ?? "",
-    receipt_footer: data?.receipt_footer ?? "Terima kasih telah berbelanja di KTM D-Printing.",
+    receipt_footer: data?.receipt_footer ?? "Terima kasih telah berbelanja di KTM DIGITAL-PRINTING.",
   };
 
   return <SettingsClient initialSettings={initialSettings} />;

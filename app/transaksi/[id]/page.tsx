@@ -49,11 +49,11 @@ export default async function TransactionDetailPage({
 
   if (!transaction) notFound();
 
-  const businessName = settings?.business_name || "KTM D-PRINTING";
+  const businessName = settings?.business_name || "KTM DIGITAL-PRINTING";
   const address = settings?.address || "";
   const phone = settings?.phone || "";
   const logoUrl = settings?.logo_url || null;
-  const footerNote = settings?.receipt_footer || "Terima kasih telah berbelanja di KTM D-Printing.";
+  const footerNote = settings?.receipt_footer || "Terima kasih telah berbelanja di KTM DIGITAL-PRINTING.";
 
   const dateFormatted = new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
@@ -108,13 +108,12 @@ export default async function TransactionDetailPage({
           <div className="my-4 flex items-center justify-between text-xs">
             <span className="text-slate-500">Status Transaksi</span>
             <span
-              className={`rounded-full px-2.5 py-0.5 font-bold ${
-                transaction.status === "PAID"
+              className={`rounded-full px-2.5 py-0.5 font-bold ${transaction.status === "PAID"
                   ? "bg-green-50 text-green-700"
                   : transaction.status === "PENDING"
-                  ? "bg-amber-50 text-amber-700"
-                  : "bg-red-50 text-red-700"
-              }`}
+                    ? "bg-amber-50 text-amber-700"
+                    : "bg-red-50 text-red-700"
+                }`}
             >
               {transaction.status === "PAID" ? "✓ LUNAS" : transaction.status}
             </span>
@@ -175,7 +174,7 @@ export default async function TransactionDetailPage({
           <div className="mt-6 border-t border-dashed border-slate-200 pt-5 text-center text-xs text-slate-400">
             <p className="italic">{footerNote}</p>
             <p className="mt-2 text-[10px] text-slate-300">
-              Dicetak via KTM D-Printing POS System
+              Dicetak via KTM DIGITAL-PRINTING POS System
             </p>
           </div>
         </section>

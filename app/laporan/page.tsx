@@ -69,7 +69,7 @@ export default async function ReportsPage() {
     <ReportsClient
       transactions={transactions}
       expenses={expenses}
-      businessName={settingsData?.business_name ?? "KTM D-Printing"}
+      businessName={settingsData?.business_name ?? "KTM DIGITAL-PRINTING"}
       businessAddress={settingsData?.address ?? ""}
       businessPhone={settingsData?.phone ?? ""}
       logoUrl={settingsData?.logo_url ?? null}

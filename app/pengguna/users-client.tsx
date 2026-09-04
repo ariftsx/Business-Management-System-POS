@@ -186,7 +186,7 @@ export default function UsersClient({
           <div>
             <h2 className="text-lg font-bold text-slate-900">Manajemen Pengguna</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Kelola akun akses kasir dan hak kelola operasional bisnis KTM D-Printing.
+              Kelola akun akses kasir dan hak kelola operasional bisnis KTM DIGITAL-PRINTING.
             </p>
           </div>
           <button
@@ -245,11 +245,10 @@ export default function UsersClient({
                       </td>
                       <td className="p-4">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${
-                            profile.role === "SUPER_ADMIN"
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${profile.role === "SUPER_ADMIN"
                               ? "bg-purple-50 text-purple-700"
                               : "bg-blue-50 text-blue-700"
-                          }`}
+                            }`}
                         >
                           {profile.role === "SUPER_ADMIN" ? "Super Admin" : "Kasir"}
                         </span>
@@ -263,11 +262,10 @@ export default function UsersClient({
                       </td>
                       <td className="p-4 text-center">
                         <span
-                          className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${
-                            profile.is_active
+                          className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${profile.is_active
                               ? "bg-green-50 text-green-700"
                               : "bg-slate-100 text-slate-500"
-                          }`}
+                            }`}
                         >
                           {profile.is_active ? "Aktif" : "Nonaktif"}
                         </span>
@@ -292,17 +290,16 @@ export default function UsersClient({
                             type="button"
                             disabled={togglingId === profile.id}
                             onClick={() => handleToggleStatus(profile.id, profile.is_active)}
-                            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
-                              profile.is_active
+                            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${profile.is_active
                                 ? "border-red-200 text-red-600 hover:bg-red-50"
                                 : "border-green-200 text-green-600 hover:bg-green-50"
-                            } disabled:opacity-50`}
+                              } disabled:opacity-50`}
                           >
                             {togglingId === profile.id
                               ? "Memproses..."
                               : profile.is_active
-                              ? "Nonaktifkan"
-                              : "Aktifkan"}
+                                ? "Nonaktifkan"
+                                : "Aktifkan"}
                           </button>
                         </div>
                       </td>
@@ -397,11 +394,10 @@ export default function UsersClient({
                     <button
                       type="button"
                       onClick={() => setRole("USER")}
-                      className={`rounded-xl border p-3 text-left transition ${
-                        role === "USER"
+                      className={`rounded-xl border p-3 text-left transition ${role === "USER"
                           ? "border-blue-600 bg-blue-50 text-blue-900"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
+                        }`}
                     >
                       <p className="font-bold text-xs">Kasir (User)</p>
                       <p className="mt-0.5 text-[10px] text-slate-500">
@@ -411,11 +407,10 @@ export default function UsersClient({
                     <button
                       type="button"
                       onClick={() => setRole("SUPER_ADMIN")}
-                      className={`rounded-xl border p-3 text-left transition ${
-                        role === "SUPER_ADMIN"
+                      className={`rounded-xl border p-3 text-left transition ${role === "SUPER_ADMIN"
                           ? "border-purple-600 bg-purple-50 text-purple-900"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
+                        }`}
                     >
                       <p className="font-bold text-xs">Super Admin</p>
                       <p className="mt-0.5 text-[10px] text-slate-500">
@@ -515,11 +510,10 @@ export default function UsersClient({
                     <button
                       type="button"
                       onClick={() => setEditRole("USER")}
-                      className={`rounded-xl border p-3 text-left transition ${
-                        editRole === "USER"
+                      className={`rounded-xl border p-3 text-left transition ${editRole === "USER"
                           ? "border-blue-600 bg-blue-50 text-blue-900"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
+                        }`}
                     >
                       <p className="font-bold text-xs">Kasir (User)</p>
                       <p className="mt-0.5 text-[10px] text-slate-500">
@@ -529,11 +523,10 @@ export default function UsersClient({
                     <button
                       type="button"
                       onClick={() => setEditRole("SUPER_ADMIN")}
-                      className={`rounded-xl border p-3 text-left transition ${
-                        editRole === "SUPER_ADMIN"
+                      className={`rounded-xl border p-3 text-left transition ${editRole === "SUPER_ADMIN"
                           ? "border-purple-600 bg-purple-50 text-purple-900"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
+                        }`}
                     >
                       <p className="font-bold text-xs">Super Admin</p>
                       <p className="mt-0.5 text-[10px] text-slate-500">

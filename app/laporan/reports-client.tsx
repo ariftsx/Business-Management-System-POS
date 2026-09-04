@@ -261,7 +261,7 @@ export default function ReportsClient({
           )}
           <div className="flex-1">
             <h1 className="text-xl font-black uppercase tracking-wider text-slate-950">
-              {businessName || "KTM D-PRINTING"}
+              {businessName || "KTM DIGITAL-PRINTING"}
             </h1>
             <p className="text-xs text-slate-700 leading-relaxed">{businessAddress}</p>
             {businessPhone && (
@@ -320,10 +320,10 @@ export default function ReportsClient({
                     row.highlight
                       ? "bg-slate-100"
                       : row.cashflow
-                      ? "bg-blue-50/60"
-                      : i % 2 === 0
-                      ? "bg-white"
-                      : "bg-slate-50/50"
+                        ? "bg-blue-50/60"
+                        : i % 2 === 0
+                          ? "bg-white"
+                          : "bg-slate-50/50"
                   }
                 >
                   <td className={`border border-slate-200 p-2 ${row.bold ? "font-black text-slate-950" : "font-semibold text-slate-700"}`}>
@@ -499,11 +499,10 @@ export default function ReportsClient({
               <button
                 key={p.id}
                 onClick={() => handlePreset(p.id as any)}
-                className={`rounded-lg px-3.5 py-2 text-xs font-bold transition ${
-                  preset === p.id
+                className={`rounded-lg px-3.5 py-2 text-xs font-bold transition ${preset === p.id
                     ? "bg-blue-600 text-white shadow-sm"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+                  }`}
               >
                 {p.label}
               </button>

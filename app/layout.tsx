@@ -8,8 +8,8 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "KTM D Printing | Business Management",
-  description: "Operasional bisnis dan POS KTM D Printing",
+  title: "KTM Digital Printing | Business Management",
+  description: "Operasional bisnis dan POS KTM Digital Printing",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

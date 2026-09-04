@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "KTM D Printing Business System",
-    short_name: "KTM D Printing",
-    description: "Sistem manajemen bisnis dan POS KTM D Printing",
+    name: "KTM Digital Printing Business System",
+    short_name: "KTM Digital Printing",
+    description: "Sistem manajemen bisnis dan POS KTM Digital Printing",
     start_url: "/",
     display: "standalone",
     background_color: "#F8FAFC",

@@ -30,36 +30,36 @@ const groups: {
   label: string;
   items: [string, LucideIcon, string, boolean?][];
 }[] = [
-  {
-    label: "UTAMA",
-    items: [
-      ["Dashboard", Home, "/"],
-      ["Kasir", ShoppingCart, "/kasir"],
-    ],
-  },
-  {
-    label: "OPERASIONAL",
-    items: [
-      ["Produk", Package, "/produk"],
-      ["Stok", Warehouse, "/stok"],
-      ["Transaksi", ClipboardList, "/transaksi"],
-    ],
-  },
-  {
-    label: "KEUANGAN",
-    items: [
-      ["Keuangan", WalletCards, "/keuangan"],
-      ["Laporan", BarChart3, "/laporan"],
-    ],
-  },
-  {
-    label: "SISTEM",
-    items: [
-      ["Pengaturan", Settings, "/pengaturan"],
-      ["Pengguna", Users, "/pengguna", true], // adminOnly
-    ],
-  },
-];
+    {
+      label: "UTAMA",
+      items: [
+        ["Dashboard", Home, "/"],
+        ["Kasir", ShoppingCart, "/kasir"],
+      ],
+    },
+    {
+      label: "OPERASIONAL",
+      items: [
+        ["Produk", Package, "/produk"],
+        ["Stok", Warehouse, "/stok"],
+        ["Transaksi", ClipboardList, "/transaksi"],
+      ],
+    },
+    {
+      label: "KEUANGAN",
+      items: [
+        ["Keuangan", WalletCards, "/keuangan"],
+        ["Laporan", BarChart3, "/laporan"],
+      ],
+    },
+    {
+      label: "SISTEM",
+      items: [
+        ["Pengaturan", Settings, "/pengaturan"],
+        ["Pengguna", Users, "/pengguna", true], // adminOnly
+      ],
+    },
+  ];
 
 export function AppShell({
   children,
@@ -122,20 +122,18 @@ export function AppShell({
     <div className="min-h-screen bg-[var(--color-background)]">
       {/* Desktop Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 hidden border-r border-[var(--color-border)] bg-white transition-all duration-300 ease-in-out lg:flex lg:flex-col ${
-          collapsed ? "w-[76px]" : "w-[260px]"
-        }`}
+        className={`fixed inset-y-0 left-0 z-30 hidden border-r border-[var(--color-border)] bg-white transition-all duration-300 ease-in-out lg:flex lg:flex-col ${collapsed ? "w-[76px]" : "w-[260px]"
+          }`}
       >
         {/* Sidebar Header / Logo */}
         <div
-          className={`flex h-20 items-center border-b border-slate-100 px-4 ${
-            collapsed ? "justify-center" : "justify-between"
-          }`}
+          className={`flex h-20 items-center border-b border-slate-100 px-4 ${collapsed ? "justify-center" : "justify-between"
+            }`}
         >
           <Link href="/" className="flex items-center gap-3 overflow-hidden">
             <Image
               src="/logo.png"
-              alt="Logo KTM D Printing"
+              alt="Logo KTM Digital Printing"
               width={40}
               height={40}
               className="h-10 w-10 shrink-0 object-contain"
@@ -144,7 +142,7 @@ export function AppShell({
             {!collapsed && (
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold tracking-tight text-slate-900">
-                  KTM D PRINTING
+                  KTM Digital Printing
                 </p>
                 <p className="text-[10px] font-medium tracking-wider text-slate-400">
                   POS & SYSTEM
@@ -202,15 +200,13 @@ export function AppShell({
                       key={label as string}
                       href={href as string}
                       title={collapsed ? (label as string) : undefined}
-                      className={`flex min-h-11 items-center rounded-lg transition ${
-                        collapsed
+                      className={`flex min-h-11 items-center rounded-lg transition ${collapsed
                           ? "justify-center px-0 w-11 mx-auto"
                           : "gap-3 px-3 text-sm font-semibold"
-                      } ${
-                        isActive
+                        } ${isActive
                           ? "bg-blue-50 text-blue-600 font-bold shadow-xs"
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                      }`}
+                        }`}
                     >
                       <NavIcon
                         aria-hidden="true"
@@ -252,14 +248,14 @@ export function AppShell({
               >
                 <Image
                   src="/logo.png"
-                  alt="Logo KTM D Printing"
+                  alt="Logo KTM Digital Printing"
                   width={36}
                   height={36}
                   className="h-9 w-9 object-contain"
                 />
                 <div>
                   <p className="text-sm font-bold tracking-tight text-slate-900">
-                    KTM D PRINTING
+                    KTM Digital Printing
                   </p>
                   <p className="text-[10px] font-medium text-slate-400">POS & SYSTEM</p>
                 </div>
@@ -288,11 +284,10 @@ export function AppShell({
                           key={label as string}
                           href={href as string}
                           onClick={() => setMobileOpen(false)}
-                          className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold transition ${
-                            isActive
+                          className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold transition ${isActive
                               ? "bg-blue-50 text-blue-600 font-bold"
                               : "text-slate-600 hover:bg-slate-50"
-                          }`}
+                            }`}
                         >
                           <NavIcon
                             aria-hidden="true"
@@ -317,9 +312,8 @@ export function AppShell({
 
       {/* Main Content Area */}
       <main
-        className={`pb-24 lg:pb-8 transition-all duration-300 ease-in-out ${
-          collapsed ? "lg:ml-[76px]" : "lg:ml-[260px]"
-        }`}
+        className={`pb-24 lg:pb-8 transition-all duration-300 ease-in-out ${collapsed ? "lg:ml-[76px]" : "lg:ml-[260px]"
+          }`}
       >
         {/* Top Header */}
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur-xs sm:px-8 lg:px-10">
@@ -345,7 +339,7 @@ export function AppShell({
             </button>
 
             <div>
-              <p className="text-[11px] font-medium text-slate-400">KTM D Printing</p>
+              <p className="text-[11px] font-medium text-slate-400">KTM Digital Printing</p>
               <h1 className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
                 {active}
               </h1>
@@ -390,9 +384,8 @@ export function AppShell({
             <Link
               key={label as string}
               href={href as string}
-              className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition ${
-                isActive ? "text-blue-600 font-extrabold" : "text-slate-400 hover:text-slate-600"
-              }`}
+              className={`flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition ${isActive ? "text-blue-600 font-extrabold" : "text-slate-400 hover:text-slate-600"
+                }`}
             >
               <MobileIcon
                 aria-hidden="true"

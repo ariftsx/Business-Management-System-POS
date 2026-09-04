@@ -1,5 +1,5 @@
 /**
- * Utility functions for currency and number formatting in KTM D-Printing POS
+ * Utility functions for currency and number formatting in KTM DIGITAL-PRINTING POS
  */
 
 export const money = (value: number): string =>

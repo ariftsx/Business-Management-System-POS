@@ -229,7 +229,7 @@ export default function SettingsClient({
                 label="Nama Akun DANA"
                 value={formData.dana_account_name}
                 onChange={(val) => handleChange("dana_account_name", val)}
-                placeholder="Contoh: KTM D-Printing"
+                placeholder="Contoh: KTM DIGITAL-PRINTING"
               />
             </div>
           </FormSection>
@@ -244,7 +244,7 @@ export default function SettingsClient({
               label="Pesan Footer Struk"
               value={formData.receipt_footer}
               onChange={(val) => handleChange("receipt_footer", val)}
-              placeholder="Contoh: Terima kasih telah berbelanja di KTM D-Printing!"
+              placeholder="Contoh: Terima kasih telah berbelanja di KTM DIGITAL-PRINTING!"
             />
           </FormSection>
 
