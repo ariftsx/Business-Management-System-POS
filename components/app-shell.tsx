@@ -70,12 +70,7 @@ export function AppShell({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return sessionStorage.getItem("ktm_user_role");
-    }
-    return null;
-  });
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   // Restore collapsed preference from localStorage
   useEffect(() => {

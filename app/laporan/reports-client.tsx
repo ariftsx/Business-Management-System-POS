@@ -115,9 +115,24 @@ export default function ReportsClient({
     return acc + t.items.reduce((sum, item) => sum + item.cost_price * item.quantity, 0);
   }, 0);
   const grossProfit = revenue - cogs;
+
+  // Pisahkan Beban Operasional Toko dari Belanja Modal/Bahan Baku agar tidak terpotong dobel dengan HPP
+  const operationalExpense = filteredExpenses
+    .filter((e) => e.category !== "Bahan Baku & Material")
+    .reduce((acc, e) => acc + e.amount, 0);
+
+  const materialStockExpense = filteredExpenses
+    .filter((e) => e.category === "Bahan Baku & Material")
+    .reduce((acc, e) => acc + e.amount, 0);
+
   const totalExpense = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
-  const netProfit = grossProfit - totalExpense;
+
+  // Laba Bersih Operasional = Laba Kotor - Beban Operasional Toko
+  const netProfit = grossProfit - operationalExpense;
   const netMargin = revenue > 0 ? Math.round((netProfit / revenue) * 100) : 0;
+
+  // Arus Kas Riil Bersih = Seluruh Kas Masuk Omzet - Seluruh Kas Keluar Riil
+  const netCashflow = revenue - totalExpense;
 
   // Payment method breakdown
   const paymentBreakdown = useMemo(() => {
@@ -335,28 +350,46 @@ export default function ReportsClient({
                   <td className="p-2.5 text-right font-bold text-slate-900">{money(revenue)}</td>
                 </tr>
                 <tr className="border-b border-slate-200">
-                  <td className="p-2.5 font-semibold text-slate-700">2. Beban Pokok Penjualan (HPP / Modal Barang)</td>
+                  <td className="p-2.5 font-semibold text-slate-700">2. Beban Pokok Penjualan (HPP / Modal Barang Terjual)</td>
                   <td className="p-2.5 text-right font-semibold text-slate-800">({money(cogs)})</td>
                 </tr>
                 <tr className="border-b border-slate-300 bg-slate-50">
                   <td className="p-2.5 font-bold text-slate-900">
-                    3. LABA KOTOR OPERASIONAL
+                    3. LABA KOTOR PENJUALAN
                   </td>
                   <td className="p-2.5 text-right font-bold text-slate-900">{money(grossProfit)}</td>
                 </tr>
                 <tr className="border-b border-slate-200">
-                  <td className="p-2.5 font-semibold text-slate-700">4. Total Beban Operasional & Biaya Lainnya</td>
-                  <td className="p-2.5 text-right font-semibold text-slate-800">({money(totalExpense)})</td>
+                  <td className="p-2.5 font-semibold text-slate-700">
+                    4. Beban Operasional Toko (Listrik, Gaji, Sewa, dll.)
+                    {materialStockExpense > 0 && (
+                      <span className="block text-[10px] text-slate-500 font-normal italic mt-0.5">
+                        *Belanja bahan/stok ({money(materialStockExpense)}) dihitung via HPP saat barang terjual
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-2.5 text-right font-semibold text-slate-800">({money(operationalExpense)})</td>
                 </tr>
-                <tr className="bg-slate-100 font-bold">
+                <tr className="border-b border-slate-300 bg-slate-100 font-bold">
                   <td className="p-2.5 text-sm font-black text-slate-950">
-                    5. LABA BERSIH (NET PROFIT)
+                    5. LABA BERSIH OPERASIONAL (NET PROFIT)
                   </td>
                   <td className="p-2.5 text-right text-sm font-black text-slate-950">
                     {money(netProfit)}
                     <span className="ml-2 text-xs font-normal text-slate-600">
                       ({netMargin}% margin)
                     </span>
+                  </td>
+                </tr>
+                <tr className="bg-blue-50/50">
+                  <td className="p-2.5 font-semibold text-blue-950">
+                    6. Arus Kas Riil Bersih (Net Cash Flow)
+                    <span className="block text-[10px] text-blue-600 font-normal mt-0.5">
+                      Total Kas Masuk ({money(revenue)}) dikurangi Seluruh Kas Keluar ({money(totalExpense)})
+                    </span>
+                  </td>
+                  <td className={`p-2.5 text-right font-black ${netCashflow >= 0 ? "text-emerald-700" : "text-red-700"}`}>
+                    {money(netCashflow)}
                   </td>
                 </tr>
               </tbody>
@@ -380,7 +413,14 @@ export default function ReportsClient({
                 <tbody className="divide-y divide-slate-200">
                   {expenseCategoryBreakdown.map((c) => (
                     <tr key={c.category}>
-                      <td className="p-2">{c.category}</td>
+                      <td className="p-2">
+                        {c.category}
+                        {c.category === "Bahan Baku & Material" && (
+                          <span className="block text-[9px] text-slate-500 font-normal italic">
+                            (Modal Bahan/Stok)
+                          </span>
+                        )}
+                      </td>
                       <td className="p-2 text-center">{c.count}</td>
                       <td className="p-2 text-right font-semibold">{money(c.total)}</td>
                     </tr>
@@ -473,7 +513,7 @@ export default function ReportsClient({
         {/* SCREEN VIEW (HIDDEN DURING PRINT) */}
         <div className="print:hidden space-y-6">
           {/* Financial KPI Cards */}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
             <ReportCard
               title="Total Omzet"
               subtitle={`${filteredTransactions.length} transaksi selesai`}
@@ -493,16 +533,22 @@ export default function ReportsClient({
               color="text-green-600"
             />
             <ReportCard
-              title="Total Beban"
-              subtitle={`${filteredExpenses.length} pos pengeluaran`}
-              value={money(totalExpense)}
-              color="text-red-600"
+              title="Beban Operasional"
+              subtitle="Operasional non-HPP"
+              value={money(operationalExpense)}
+              color="text-amber-600"
             />
             <ReportCard
               title="Laba Bersih"
               subtitle={`Margin: ${netMargin}%`}
               value={money(netProfit)}
               color={netProfit >= 0 ? "text-emerald-700" : "text-red-700"}
+            />
+            <ReportCard
+              title="Arus Kas Riil"
+              subtitle="Kas Masuk - Keluar"
+              value={money(netCashflow)}
+              color={netCashflow >= 0 ? "text-blue-600" : "text-red-600"}
             />
           </div>
 
