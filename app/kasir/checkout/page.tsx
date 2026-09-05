@@ -125,7 +125,7 @@ export default function CheckoutPage() {
                 className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 transition"
               >
                 <ReceiptText size={17} />
-                <span>Lihat & Cetak Struk</span>
+                <span>Lihat, Cetak & Bagikan Struk</span>
               </Link>
               <Link
                 href="/kasir"

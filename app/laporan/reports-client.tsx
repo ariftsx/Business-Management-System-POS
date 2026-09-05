@@ -12,6 +12,7 @@ import {
   Package,
 } from "lucide-react";
 import { AppShell } from "../../components/app-shell";
+import { ShareExportActions } from "../../components/share-export-actions";
 import * as XLSX from "xlsx";
 
 export type ReportTransactionItem = {
@@ -253,7 +254,7 @@ export default function ReportsClient({
   return (
     <AppShell active="Laporan">
       {/* ============ PRINT VIEW ============ */}
-      <div className="hidden print:block font-sans text-black">
+      <div id="laporan-keuangan-print" className="hidden print:block font-sans text-black p-4 bg-white">
         {/* Kop Surat */}
         <div className="flex items-center gap-4 border-b-2 border-slate-900 pb-4">
           {logoUrl && (
@@ -471,19 +472,17 @@ export default function ReportsClient({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={handlePrint}
-              className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 hover:bg-slate-50 transition"
-            >
-              <Printer size={16} />
-              <span>Cetak PDF</span>
-            </button>
-            <button
               onClick={handleExportExcel}
-              className="flex min-h-11 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-bold text-white hover:bg-blue-700 shadow-sm transition"
+              className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
             >
               <Download size={16} />
               <span>Export Excel</span>
             </button>
+            <ShareExportActions
+              targetSelector="#laporan-keuangan-print"
+              filename={`Laporan_Keuangan_${startDate}_sd_${endDate}`}
+              title="Laporan Keuangan KTM Digital Printing"
+            />
           </div>
         </div>
 

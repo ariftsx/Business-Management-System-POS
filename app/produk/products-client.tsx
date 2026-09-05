@@ -259,18 +259,18 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
 
   async function handleDeactivate(product: Product) {
     const confirm = window.confirm(
-      `Apakah Anda yakin ingin menonaktifkan produk "${product.name}"? Produk tidak akan muncul di kasir.`
+      `Apakah Anda yakin ingin menghapus produk "${product.name}"? Produk akan dihapus permanen dari sistem.`
     );
     if (!confirm) return;
 
     const supabase = createClient();
     const { error } = await supabase
       .from("products")
-      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .delete()
       .eq("id", product.id);
 
     if (error) {
-      alert("Gagal menonaktifkan produk: " + error.message);
+      alert("Gagal menghapus produk: " + error.message);
       return;
     }
 
@@ -372,7 +372,7 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
           <div className="border-b border-slate-100 px-5 py-4">
             <p className="text-sm font-bold text-slate-900">{filtered.length} produk aktif</p>
           </div>
-          <div className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 p-3 sm:p-4">
             {filtered.map((product) => {
               const profitPerUnit = product.price - product.cost;
               const marginPercent =
@@ -382,10 +382,10 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
               return (
                 <article
                   key={product.id}
-                  className="flex flex-col justify-between rounded-xl border border-slate-200 p-4 transition hover:shadow-md"
+                  className="flex flex-col justify-between rounded-xl border border-slate-200 p-2.5 sm:p-4 bg-white transition hover:shadow-md"
                 >
                   <div>
-                    <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-blue-50 to-slate-100 text-blue-300">
+                    <div className="relative flex h-20 sm:h-28 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-blue-50 to-slate-100 text-blue-300">
                       {product.imageUrl ? (
                         <img
                           src={product.imageUrl}
@@ -393,21 +393,21 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <ImageIcon aria-hidden="true" size={36} strokeWidth={1.5} />
+                        <ImageIcon aria-hidden="true" size={28} strokeWidth={1.5} className="sm:w-9 sm:h-9" />
                       )}
                     </div>
 
-                    <div className="mt-3 flex items-start justify-between gap-2">
+                    <div className="mt-2 sm:mt-3 flex flex-col sm:flex-row sm:items-start justify-between gap-1 sm:gap-2">
                       <div className="min-w-0 flex-1">
-                        <h3 className="truncate font-bold text-slate-900" title={product.name}>
+                        <h3 className="truncate text-xs sm:text-sm font-bold text-slate-900" title={product.name}>
                           {product.name}
                         </h3>
-                        <p className="mt-0.5 text-xs text-slate-400">
+                        <p className="mt-0.5 text-[10px] sm:text-xs text-slate-400 truncate">
                           {product.sku} · {product.category}
                         </p>
                       </div>
                       <span
-                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        className={`self-start shrink-0 rounded-full px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold ${
                           isLowStock
                             ? "bg-amber-50 text-amber-700"
                             : "bg-green-50 text-green-700"
@@ -418,35 +418,35 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
                     </div>
 
                     {/* Price & Cost Breakdown */}
-                    <div className="mt-4 grid grid-cols-2 gap-2 border-y border-slate-100 py-2.5">
+                    <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 border-y border-slate-100 py-2 sm:py-2.5">
                       <div>
-                        <p className="text-[10px] uppercase font-bold text-slate-400">Harga Jual</p>
-                        <p className="mt-0.5 text-sm font-bold text-blue-600">
+                        <p className="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400">Harga Jual</p>
+                        <p className="mt-0.5 text-xs sm:text-sm font-bold text-blue-600">
                           {money(product.price)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase font-bold text-slate-400">Harga Pokok (HPP)</p>
-                        <p className="mt-0.5 text-sm font-semibold text-slate-600">
+                        <p className="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400">HPP</p>
+                        <p className="mt-0.5 text-xs sm:text-sm font-semibold text-slate-600">
                           {money(product.cost)}
                         </p>
                       </div>
                     </div>
 
                     {/* Profit margin badge & stock */}
-                    <div className="mt-2.5 flex items-center justify-between text-xs">
-                      <span className="flex items-center gap-1 font-semibold text-emerald-600">
-                        <TrendingUp size={13} />
-                        <span>Laba: {money(profitPerUnit)} ({marginPercent}%)</span>
+                    <div className="mt-2 flex flex-col sm:flex-row sm:items-center justify-between text-[10px] sm:text-xs gap-1">
+                      <span className="flex items-center gap-1 font-semibold text-emerald-600 truncate">
+                        <TrendingUp size={12} className="shrink-0" />
+                        <span className="truncate">Laba: {money(profitPerUnit)} ({marginPercent}%)</span>
                       </span>
-                      <span className="font-bold text-slate-800">
+                      <span className="font-bold text-slate-800 shrink-0">
                         {product.stock} {product.unit}
                       </span>
                     </div>
                   </div>
 
                   {/* Actions: Edit & Deactivate */}
-                  <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+                  <div className="mt-2.5 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-2 sm:pt-3">
                     <button
                       type="button"
                       onClick={() => {
@@ -457,18 +457,18 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
                         setEditImageFile(null);
                         setEditImagePreview(product.imageUrl || "");
                       }}
-                      className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                      className="flex h-7 sm:h-8 items-center gap-1 rounded-lg border border-slate-200 px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
                     >
-                      <Edit2 size={13} />
+                      <Edit2 size={12} />
                       <span>Edit</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDeactivate(product)}
-                      title="Nonaktifkan produk"
-                      className="flex h-8 items-center rounded-lg border border-red-200 px-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition"
+                      title="Hapus produk permanen"
+                      className="flex h-7 sm:h-8 items-center rounded-lg border border-red-200 px-2 text-[11px] sm:text-xs font-semibold text-red-600 hover:bg-red-50 transition"
                     >
-                      <Trash2 size={13} />
+                      <Trash2 size={12} />
                     </button>
                   </div>
                 </article>
@@ -485,14 +485,14 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
 
         {/* Modal: Tambah Produk Baru */}
         {showAddModal && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-xs sm:items-center sm:p-6">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 p-3 pt-10 sm:p-6 backdrop-blur-xs flex min-h-full items-end sm:items-center justify-center">
             <form
               onSubmit={addProduct}
-              className="w-full max-w-xl rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl"
+              className="w-full max-w-xl my-auto rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh]"
             >
-              <div className="mb-6 flex items-start justify-between">
+              <div className="flex items-start justify-between p-5 sm:p-6 border-b border-slate-100 shrink-0">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">Tambah Produk Baru</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900">Tambah Produk Baru</h3>
                   <p className="mt-1 text-xs text-slate-500">Isi data lengkap produk untuk katalog dan kasir.</p>
                 </div>
                 <button
@@ -504,148 +504,150 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
                 </button>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Nama Produk *
-                  <input
-                    required
-                    name="name"
-                    type="text"
-                    placeholder="Contoh: Banner Flexi 280gr"
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  SKU / Kode Produk *
-                  <input
-                    required
-                    name="sku"
-                    type="text"
-                    placeholder="Contoh: BNR-280"
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Kategori *
-                  <input
-                    required
-                    name="category"
-                    type="text"
-                    placeholder="Contoh: Banner / Stiker"
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Satuan *
-                  <input
-                    required
-                    name="unit"
-                    type="text"
-                    placeholder="Contoh: meter / pcs / lbr"
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Harga Pokok (HPP) (Rp) *
-                  <input
-                    required
-                    name="cost"
-                    type="text"
-                    inputMode="numeric"
-                    value={addCost}
-                    onChange={(e) => setAddCost(formatRupiahInput(e.target.value))}
-                    placeholder="0"
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Harga Jual (Rp) *
-                  <input
-                    required
-                    name="price"
-                    type="text"
-                    inputMode="numeric"
-                    value={addPrice}
-                    onChange={(e) => setAddPrice(formatRupiahInput(e.target.value))}
-                    placeholder="0"
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Stok Awal *
-                  <input
-                    required
-                    name="stock"
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Batas Minimum Stok
-                  <input
-                    name="minStock"
-                    type="number"
-                    min="0"
-                    placeholder="5"
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-
-                {/* Optional Product Image Upload */}
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
-                    Foto Produk (Opsional)
+              <div className="overflow-y-auto p-5 sm:p-6 flex-1 space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Nama Produk *
+                    <input
+                      required
+                      name="name"
+                      type="text"
+                      placeholder="Contoh: Banner Flexi 280gr"
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
                   </label>
-                  <div className="flex items-center gap-3">
-                    {addImagePreview ? (
-                      <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-slate-200">
-                        <img src={addImagePreview} alt="Preview" className="h-full w-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAddImageFile(null);
-                            setAddImagePreview("");
-                          }}
-                          className="absolute right-0.5 top-0.5 rounded-full bg-slate-900/70 p-0.5 text-white hover:bg-slate-900"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400">
-                        <ImageIcon size={22} />
-                      </div>
-                    )}
-                    <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                      <Upload size={14} />
-                      <span>{addImagePreview ? "Ganti Foto" : "Pilih Foto Produk"}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setAddImageFile(file);
-                            setAddImagePreview(URL.createObjectURL(file));
-                          }
-                        }}
-                      />
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    SKU / Kode Produk *
+                    <input
+                      required
+                      name="sku"
+                      type="text"
+                      placeholder="Contoh: BNR-280"
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Kategori *
+                    <input
+                      required
+                      name="category"
+                      type="text"
+                      placeholder="Contoh: Banner / Stiker"
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Satuan *
+                    <input
+                      required
+                      name="unit"
+                      type="text"
+                      placeholder="Contoh: meter / pcs / lbr"
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Harga Pokok (HPP) (Rp) *
+                    <input
+                      required
+                      name="cost"
+                      type="text"
+                      inputMode="numeric"
+                      value={addCost}
+                      onChange={(e) => setAddCost(formatRupiahInput(e.target.value))}
+                      placeholder="0"
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Harga Jual (Rp) *
+                    <input
+                      required
+                      name="price"
+                      type="text"
+                      inputMode="numeric"
+                      value={addPrice}
+                      onChange={(e) => setAddPrice(formatRupiahInput(e.target.value))}
+                      placeholder="0"
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Stok Awal *
+                    <input
+                      required
+                      name="stock"
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Batas Minimum Stok
+                    <input
+                      name="minStock"
+                      type="number"
+                      min="0"
+                      placeholder="5"
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+
+                  {/* Optional Product Image Upload */}
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
+                      Foto Produk (Opsional)
                     </label>
+                    <div className="flex items-center gap-3">
+                      {addImagePreview ? (
+                        <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-slate-200">
+                          <img src={addImagePreview} alt="Preview" className="h-full w-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAddImageFile(null);
+                              setAddImagePreview("");
+                            }}
+                            className="absolute right-0.5 top-0.5 rounded-full bg-slate-900/70 p-0.5 text-white hover:bg-slate-900"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400">
+                          <ImageIcon size={22} />
+                        </div>
+                      )}
+                      <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                        <Upload size={14} />
+                        <span>{addImagePreview ? "Ganti Foto" : "Pilih Foto Produk"}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setAddImageFile(file);
+                              setAddImagePreview(URL.createObjectURL(file));
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
+
+                {formError && (
+                  <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-xs font-medium text-red-700">
+                    <AlertTriangle size={16} className="shrink-0" />
+                    <span>{formError}</span>
+                  </div>
+                )}
               </div>
 
-              {formError && (
-                <div className="mt-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-xs font-medium text-red-700">
-                  <AlertTriangle size={16} className="shrink-0" />
-                  <span>{formError}</span>
-                </div>
-              )}
-
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50 shrink-0 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
@@ -668,14 +670,14 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
 
         {/* Modal: Edit Produk */}
         {editingProduct && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-xs sm:items-center sm:p-6">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 p-3 pt-10 sm:p-6 backdrop-blur-xs flex min-h-full items-end sm:items-center justify-center">
             <form
               onSubmit={updateProduct}
-              className="w-full max-w-xl rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl"
+              className="w-full max-w-xl my-auto rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh]"
             >
-              <div className="mb-6 flex items-start justify-between">
+              <div className="flex items-start justify-between p-5 sm:p-6 border-b border-slate-100 shrink-0">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">Edit Data Produk</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900">Edit Data Produk</h3>
                   <p className="mt-1 text-xs text-slate-500">
                     Perbarui nama, SKU, kategori, atau harga pokok/jual.
                   </p>
@@ -689,138 +691,140 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
                 </button>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Nama Produk *
-                  <input
-                    required
-                    name="name"
-                    type="text"
-                    defaultValue={editingProduct.name}
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  SKU / Kode Produk *
-                  <input
-                    required
-                    name="sku"
-                    type="text"
-                    defaultValue={editingProduct.sku}
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Kategori *
-                  <input
-                    required
-                    name="category"
-                    type="text"
-                    defaultValue={editingProduct.category}
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Satuan *
-                  <input
-                    required
-                    name="unit"
-                    type="text"
-                    defaultValue={editingProduct.unit}
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Harga Pokok (HPP) (Rp) *
-                  <input
-                    required
-                    name="cost"
-                    type="text"
-                    inputMode="numeric"
-                    value={editCost}
-                    onChange={(e) => setEditCost(formatRupiahInput(e.target.value))}
-                    placeholder="0"
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Harga Jual (Rp) *
-                  <input
-                    required
-                    name="price"
-                    type="text"
-                    inputMode="numeric"
-                    value={editPrice}
-                    onChange={(e) => setEditPrice(formatRupiahInput(e.target.value))}
-                    placeholder="0"
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 sm:col-span-2">
-                  Batas Minimum Stok
-                  <input
-                    name="minStock"
-                    type="number"
-                    min="0"
-                    placeholder="5"
-                    defaultValue={editingProduct.minStock}
-                    className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
-                  />
-                </label>
-
-                {/* Optional Product Image Upload in Edit */}
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
-                    Foto Produk (Opsional)
+              <div className="overflow-y-auto p-5 sm:p-6 flex-1 space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Nama Produk *
+                    <input
+                      required
+                      name="name"
+                      type="text"
+                      defaultValue={editingProduct.name}
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
                   </label>
-                  <div className="flex items-center gap-3">
-                    {editImagePreview ? (
-                      <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-slate-200">
-                        <img src={editImagePreview} alt="Preview" className="h-full w-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditImageFile(null);
-                            setEditImagePreview("");
-                          }}
-                          className="absolute right-0.5 top-0.5 rounded-full bg-slate-900/70 p-0.5 text-white hover:bg-slate-900"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400">
-                        <ImageIcon size={22} />
-                      </div>
-                    )}
-                    <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                      <Upload size={14} />
-                      <span>{editImagePreview ? "Ganti Foto" : "Pilih Foto Produk"}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setEditImageFile(file);
-                            setEditImagePreview(URL.createObjectURL(file));
-                          }
-                        }}
-                      />
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    SKU / Kode Produk *
+                    <input
+                      required
+                      name="sku"
+                      type="text"
+                      defaultValue={editingProduct.sku}
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Kategori *
+                    <input
+                      required
+                      name="category"
+                      type="text"
+                      defaultValue={editingProduct.category}
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Satuan *
+                    <input
+                      required
+                      name="unit"
+                      type="text"
+                      defaultValue={editingProduct.unit}
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Harga Pokok (HPP) (Rp) *
+                    <input
+                      required
+                      name="cost"
+                      type="text"
+                      inputMode="numeric"
+                      value={editCost}
+                      onChange={(e) => setEditCost(formatRupiahInput(e.target.value))}
+                      placeholder="0"
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Harga Jual (Rp) *
+                    <input
+                      required
+                      name="price"
+                      type="text"
+                      inputMode="numeric"
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(formatRupiahInput(e.target.value))}
+                      placeholder="0"
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 sm:col-span-2">
+                    Batas Minimum Stok
+                    <input
+                      name="minStock"
+                      type="number"
+                      min="0"
+                      placeholder="5"
+                      defaultValue={editingProduct.minStock}
+                      className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+                    />
+                  </label>
+
+                  {/* Optional Product Image Upload in Edit */}
+                  <div className="sm:col-span-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
+                      Foto Produk (Opsional)
                     </label>
+                    <div className="flex items-center gap-3">
+                      {editImagePreview ? (
+                        <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-slate-200">
+                          <img src={editImagePreview} alt="Preview" className="h-full w-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditImageFile(null);
+                              setEditImagePreview("");
+                            }}
+                            className="absolute right-0.5 top-0.5 rounded-full bg-slate-900/70 p-0.5 text-white hover:bg-slate-900"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400">
+                          <ImageIcon size={22} />
+                        </div>
+                      )}
+                      <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                        <Upload size={14} />
+                        <span>{editImagePreview ? "Ganti Foto" : "Pilih Foto Produk"}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setEditImageFile(file);
+                              setEditImagePreview(URL.createObjectURL(file));
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
+
+                {formError && (
+                  <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-xs font-medium text-red-700">
+                    <AlertTriangle size={16} className="shrink-0" />
+                    <span>{formError}</span>
+                  </div>
+                )}
               </div>
 
-              {formError && (
-                <div className="mt-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-xs font-medium text-red-700">
-                  <AlertTriangle size={16} className="shrink-0" />
-                  <span>{formError}</span>
-                </div>
-              )}
-
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50 shrink-0 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}

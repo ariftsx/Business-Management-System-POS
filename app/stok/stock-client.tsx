@@ -465,12 +465,12 @@ export default function StockClient({
 
         {/* Modal: Tambah / Sesuaikan Stok */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-xs sm:items-center sm:p-6">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 p-3 pt-10 sm:p-6 backdrop-blur-xs flex min-h-full items-end sm:items-center justify-center">
             <form
               onSubmit={handleAdjustStock}
-              className="w-full max-w-lg rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl"
+              className="w-full max-w-lg my-auto rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh]"
             >
-              <div className="mb-5 flex items-start justify-between">
+              <div className="flex items-start justify-between p-5 sm:p-6 border-b border-slate-100 shrink-0">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">Tambah / Sesuaikan Stok</h3>
                   <p className="mt-1 text-xs text-slate-500">
@@ -486,7 +486,7 @@ export default function StockClient({
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="overflow-y-auto p-5 sm:p-6 flex-1 space-y-4">
                 {/* Searchable Product Combobox */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
@@ -577,7 +577,7 @@ export default function StockClient({
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50 shrink-0 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}

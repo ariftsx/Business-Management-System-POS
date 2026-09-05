@@ -74,7 +74,7 @@ export default async function TransactionDetailPage({
             <ArrowLeft size={17} />
             <span>Kembali ke riwayat transaksi</span>
           </Link>
-          <ReceiptPrintButton />
+          <ReceiptPrintButton transactionNumber={transaction.transaction_number} />
         </div>
 
         {/* Printable Receipt Card */}

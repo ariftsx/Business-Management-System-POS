@@ -15,6 +15,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { AppShell } from "../../components/app-shell";
+import { ShareExportActions } from "../../components/share-export-actions";
 import * as XLSX from "xlsx";
 
 export type TransactionItem = {
@@ -190,7 +191,7 @@ export default function TransactionsClient({
   return (
     <AppShell active="Transaksi">
       {/* ============ PRINT VIEW ============ */}
-      <div className="hidden print:block font-sans text-black text-xs p-0">
+      <div id="rekap-transaksi-print" className="hidden print:block font-sans text-black text-xs p-4 bg-white">
         <div className="mb-4 border-b-2 border-black pb-3">
           <h1 className="text-lg font-black uppercase tracking-wide">Rekap Riwayat Transaksi</h1>
           <p className="text-xs text-gray-600 mt-0.5">
@@ -290,14 +291,11 @@ export default function TransactionsClient({
               <Download size={15} />
               <span>Export Excel</span>
             </button>
-            <button
-              onClick={handlePrint}
-              disabled={filtered.length === 0}
-              className="flex min-h-11 items-center gap-2 rounded-lg bg-blue-600 px-4 text-xs font-bold text-white shadow-xs hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              <Printer size={15} />
-              <span>Cetak Rekap</span>
-            </button>
+            <ShareExportActions
+              targetSelector="#rekap-transaksi-print"
+              filename={`Rekap_Transaksi_${startDate || "Semua"}`}
+              title="Rekap Riwayat Transaksi KTM Digital Printing"
+            />
           </div>
         </div>
 

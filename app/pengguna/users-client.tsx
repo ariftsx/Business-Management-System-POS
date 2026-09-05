@@ -214,100 +214,184 @@ export default function UsersClient({
 
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           {profiles.length ? (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[680px] text-left text-sm">
-                <thead className="border-b border-slate-100 text-xs font-semibold text-slate-400">
-                  <tr>
-                    <th className="p-4">Pengguna</th>
-                    <th className="p-4">Peran / Hak Akses</th>
-                    <th className="p-4">Tanggal Bergabung</th>
-                    <th className="p-4 text-center">Status Akun</th>
-                    <th className="p-4 text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {profiles.map((profile) => (
-                    <tr key={profile.id} className="hover:bg-slate-50/50 transition">
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                            {profile.role === "SUPER_ADMIN" ? (
-                              <ShieldCheck size={18} />
-                            ) : (
-                              <UserRound size={18} />
-                            )}
+            <>
+              {/* DESKTOP TABLE */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full min-w-[680px] text-left text-sm">
+                  <thead className="border-b border-slate-100 text-xs font-semibold text-slate-400">
+                    <tr>
+                      <th className="p-4">Pengguna</th>
+                      <th className="p-4">Peran / Hak Akses</th>
+                      <th className="p-4">Tanggal Bergabung</th>
+                      <th className="p-4 text-center">Status Akun</th>
+                      <th className="p-4 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {profiles.map((profile) => (
+                      <tr key={profile.id} className="hover:bg-slate-50/50 transition">
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                              {profile.role === "SUPER_ADMIN" ? (
+                                <ShieldCheck size={18} />
+                              ) : (
+                                <UserRound size={18} />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-900">{profile.full_name}</p>
+                              <p className="text-xs text-slate-400">ID: {profile.id.substring(0, 8)}...</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-bold text-slate-900">{profile.full_name}</p>
-                            <p className="text-xs text-slate-400">ID: {profile.id.substring(0, 8)}...</p>
+                        </td>
+                        <td className="p-4">
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${profile.role === "SUPER_ADMIN"
+                                ? "bg-purple-50 text-purple-700"
+                                : "bg-blue-50 text-blue-700"
+                              }`}
+                          >
+                            {profile.role === "SUPER_ADMIN" ? "Super Admin" : "Kasir"}
+                          </span>
+                        </td>
+                        <td className="p-4 text-slate-500 text-xs">
+                          {new Intl.DateTimeFormat("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }).format(new Date(profile.created_at))}
+                        </td>
+                        <td className="p-4 text-center">
+                          <span
+                            className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${profile.is_active
+                                ? "bg-green-50 text-green-700"
+                                : "bg-slate-100 text-slate-500"
+                              }`}
+                          >
+                            {profile.is_active ? "Aktif" : "Nonaktif"}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingUser(profile);
+                                setEditFullName(profile.full_name);
+                                setEditRole(profile.role);
+                                setEditPassword("");
+                                setErrorMsg("");
+                              }}
+                              className="flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                            >
+                              <Edit2 size={13} />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={togglingId === profile.id}
+                              onClick={() => handleToggleStatus(profile.id, profile.is_active)}
+                              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${profile.is_active
+                                  ? "border-red-200 text-red-600 hover:bg-red-50"
+                                  : "border-green-200 text-green-600 hover:bg-green-50"
+                                } disabled:opacity-50`}
+                            >
+                              {togglingId === profile.id
+                                ? "Memproses..."
+                                : profile.is_active
+                                  ? "Nonaktifkan"
+                                  : "Aktifkan"}
+                            </button>
                           </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* MOBILE CARDS */}
+              <div className="sm:hidden divide-y divide-slate-100">
+                {profiles.map((profile) => (
+                  <div key={profile.id} className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                          {profile.role === "SUPER_ADMIN" ? (
+                            <ShieldCheck size={18} />
+                          ) : (
+                            <UserRound size={18} />
+                          )}
                         </div>
-                      </td>
-                      <td className="p-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${profile.role === "SUPER_ADMIN"
-                              ? "bg-purple-50 text-purple-700"
-                              : "bg-blue-50 text-blue-700"
-                            }`}
-                        >
-                          {profile.role === "SUPER_ADMIN" ? "Super Admin" : "Kasir"}
-                        </span>
-                      </td>
-                      <td className="p-4 text-slate-500 text-xs">
+                        <div>
+                          <p className="font-bold text-slate-900 text-sm">{profile.full_name}</p>
+                          <p className="text-[11px] text-slate-400">ID: {profile.id.substring(0, 8)}...</p>
+                        </div>
+                      </div>
+                      <span
+                        className={`inline-block shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${profile.is_active
+                            ? "bg-green-50 text-green-700"
+                            : "bg-slate-100 text-slate-500"
+                          }`}
+                      >
+                        {profile.is_active ? "Aktif" : "Nonaktif"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold ${profile.role === "SUPER_ADMIN"
+                            ? "bg-purple-50 text-purple-700"
+                            : "bg-blue-50 text-blue-700"
+                          }`}
+                      >
+                        {profile.role === "SUPER_ADMIN" ? "Super Admin" : "Kasir"}
+                      </span>
+                      <span className="text-[11px] text-slate-400">
                         {new Intl.DateTimeFormat("id-ID", {
                           day: "numeric",
-                          month: "long",
+                          month: "short",
                           year: "numeric",
                         }).format(new Date(profile.created_at))}
-                      </td>
-                      <td className="p-4 text-center">
-                        <span
-                          className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${profile.is_active
-                              ? "bg-green-50 text-green-700"
-                              : "bg-slate-100 text-slate-500"
-                            }`}
-                        >
-                          {profile.is_active ? "Aktif" : "Nonaktif"}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingUser(profile);
-                              setEditFullName(profile.full_name);
-                              setEditRole(profile.role);
-                              setEditPassword("");
-                              setErrorMsg("");
-                            }}
-                            className="flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
-                          >
-                            <Edit2 size={13} />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            type="button"
-                            disabled={togglingId === profile.id}
-                            onClick={() => handleToggleStatus(profile.id, profile.is_active)}
-                            className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${profile.is_active
-                                ? "border-red-200 text-red-600 hover:bg-red-50"
-                                : "border-green-200 text-green-600 hover:bg-green-50"
-                              } disabled:opacity-50`}
-                          >
-                            {togglingId === profile.id
-                              ? "Memproses..."
-                              : profile.is_active
-                                ? "Nonaktifkan"
-                                : "Aktifkan"}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-2.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingUser(profile);
+                          setEditFullName(profile.full_name);
+                          setEditRole(profile.role);
+                          setEditPassword("");
+                          setErrorMsg("");
+                        }}
+                        className="flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+                      >
+                        <Edit2 size={12} />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        disabled={togglingId === profile.id}
+                        onClick={() => handleToggleStatus(profile.id, profile.is_active)}
+                        className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${profile.is_active
+                            ? "border-red-200 text-red-600 hover:bg-red-50"
+                            : "border-green-200 text-green-600 hover:bg-green-50"
+                          } disabled:opacity-50`}
+                      >
+                        {togglingId === profile.id
+                          ? "Memproses..."
+                          : profile.is_active
+                            ? "Nonaktifkan"
+                            : "Aktifkan"}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
             <div className="p-16 text-center">
               <UsersRound size={36} className="mx-auto text-slate-300" />
@@ -321,12 +405,12 @@ export default function UsersClient({
 
         {/* Modal: Tambah Pengguna */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-xs sm:items-center sm:p-6">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 p-3 pt-10 sm:p-6 backdrop-blur-xs flex min-h-full items-end sm:items-center justify-center">
             <form
               onSubmit={handleCreateUser}
-              className="w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl"
+              className="w-full max-w-md my-auto rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh]"
             >
-              <div className="mb-5 flex items-start justify-between">
+              <div className="flex items-start justify-between p-5 border-b border-slate-100 shrink-0">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">Tambah Pengguna Baru</h3>
                   <p className="mt-1 text-xs text-slate-500">
@@ -342,7 +426,7 @@ export default function UsersClient({
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="overflow-y-auto p-5 flex-1 space-y-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                     Nama Lengkap *
@@ -428,7 +512,7 @@ export default function UsersClient({
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="p-4 border-t border-slate-100 bg-slate-50 shrink-0 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
@@ -450,12 +534,12 @@ export default function UsersClient({
 
         {/* Modal: Edit Pengguna */}
         {editingUser && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-xs sm:items-center sm:p-6">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 p-3 pt-10 sm:p-6 backdrop-blur-xs flex min-h-full items-end sm:items-center justify-center">
             <form
               onSubmit={handleUpdateUser}
-              className="w-full max-w-md rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl"
+              className="w-full max-w-md my-auto rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh]"
             >
-              <div className="mb-5 flex items-start justify-between">
+              <div className="flex items-start justify-between p-5 border-b border-slate-100 shrink-0">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">Edit Pengguna</h3>
                   <p className="mt-1 text-xs text-slate-500">
@@ -471,7 +555,7 @@ export default function UsersClient({
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="overflow-y-auto p-5 flex-1 space-y-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                     Nama Lengkap *
@@ -544,7 +628,7 @@ export default function UsersClient({
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="p-4 border-t border-slate-100 bg-slate-50 shrink-0 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setEditingUser(null)}

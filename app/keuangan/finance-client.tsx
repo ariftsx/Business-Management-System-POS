@@ -18,6 +18,7 @@ import {
   Printer,
 } from "lucide-react";
 import { AppShell } from "../../components/app-shell";
+import { ShareExportActions } from "../../components/share-export-actions";
 import { createClient } from "../../lib/supabase/client";
 import { money, formatRupiahInput, parseRupiahInput } from "../../lib/format";
 import * as XLSX from "xlsx";
@@ -301,7 +302,68 @@ export default function FinanceClient({
 
   return (
     <AppShell active="Keuangan">
-      <div className="mx-auto max-w-[1440px] space-y-6 p-4 sm:p-8 lg:p-10 pb-28">
+      {/* ============ PRINT VIEW ============ */}
+      <div id="finance-summary-print" className="hidden print:block font-sans text-black p-4 bg-white">
+        <div className="mb-4 border-b-2 border-black pb-3">
+          <h1 className="text-lg font-black uppercase tracking-wide">RINGKASAN KEUANGAN & BEBAN PENGELUARAN</h1>
+          <p className="text-xs text-gray-600 mt-0.5">KTM DIGITAL PRINTING POS SYSTEM</p>
+          <p className="text-[10px] text-gray-500 mt-0.5">
+            Dicetak: {new Date().toLocaleString("id-ID")}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-5 gap-2 border border-gray-300 p-3 bg-gray-50 mb-4 text-center">
+          <div>
+            <p className="text-[9px] font-bold uppercase text-gray-500">Omzet</p>
+            <p className="text-xs font-bold text-blue-700">{money(revenue)}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase text-gray-500">HPP</p>
+            <p className="text-xs font-bold text-gray-700">{money(cogs)}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase text-gray-500">Laba Kotor</p>
+            <p className="text-xs font-bold text-green-700">{money(gross)}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase text-gray-500">Pengeluaran</p>
+            <p className="text-xs font-bold text-red-700">{money(currentExpenseTotal)}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase text-gray-500">Arus Kas</p>
+            <p className="text-xs font-bold text-blue-800">{money(netCashflow)}</p>
+          </div>
+        </div>
+
+        <h2 className="text-xs font-bold uppercase mb-2">Riwayat Pengeluaran Operasional</h2>
+        <table className="w-full text-[10px] border border-gray-400 border-collapse">
+          <thead className="bg-gray-100 font-bold">
+            <tr>
+              <th className="border border-gray-400 p-1.5 text-left">Tanggal</th>
+              <th className="border border-gray-400 p-1.5 text-left">Kategori</th>
+              <th className="border border-gray-400 p-1.5 text-left">Deskripsi</th>
+              <th className="border border-gray-400 p-1.5 text-left">Metode</th>
+              <th className="border border-gray-400 p-1.5 text-right">Nominal (Rp)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {expenses.map((exp, idx) => (
+              <tr key={exp.id} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                <td className="border border-gray-300 p-1.5">{exp.expense_date}</td>
+                <td className="border border-gray-300 p-1.5 font-bold">{exp.category}</td>
+                <td className="border border-gray-300 p-1.5">{exp.description}</td>
+                <td className="border border-gray-300 p-1.5">{exp.payment_method}</td>
+                <td className="border border-gray-300 p-1.5 text-right font-bold text-red-700">
+                  -{money(Number(exp.amount))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ============ SCREEN VIEW ============ */}
+      <div className="print:hidden mx-auto max-w-[1440px] space-y-6 p-4 sm:p-8 lg:p-10 pb-28">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Keuangan Bisnis</h2>
@@ -311,19 +373,17 @@ export default function FinanceClient({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={handlePrint}
-              className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition"
-            >
-              <Printer size={16} />
-              <span>Cetak PDF</span>
-            </button>
-            <button
               onClick={exportToExcel}
               className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition"
             >
               <Download size={16} />
               <span>Export Excel</span>
             </button>
+            <ShareExportActions
+              targetSelector="#finance-summary-print"
+              filename={`Laporan_Keuangan_${new Date().toLocaleDateString("id-ID").replace(/\//g, "-")}`}
+              title="Laporan Keuangan & Pengeluaran KTM Digital Printing"
+            />
             <button
               onClick={() => {
                 setErrorMsg("");
@@ -464,12 +524,12 @@ export default function FinanceClient({
 
         {/* Modal: Catat Pengeluaran Baru */}
         {showAddModal && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-xs sm:items-center sm:p-6">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 p-3 pt-10 sm:p-6 backdrop-blur-xs flex min-h-full items-end sm:items-center justify-center">
             <form
               onSubmit={handleAddExpense}
-              className="w-full max-w-lg rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl"
+              className="w-full max-w-lg my-auto rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh]"
             >
-              <div className="mb-5 flex items-start justify-between">
+              <div className="flex items-start justify-between p-5 sm:p-6 border-b border-slate-100 shrink-0">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">Catat Pengeluaran Baru</h3>
                   <p className="mt-1 text-xs text-slate-500">
@@ -485,7 +545,7 @@ export default function FinanceClient({
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="overflow-y-auto p-5 sm:p-6 flex-1 space-y-4">
                 {/* Category */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
@@ -598,7 +658,7 @@ export default function FinanceClient({
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50 shrink-0 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
@@ -620,12 +680,12 @@ export default function FinanceClient({
 
         {/* Modal: Edit Pengeluaran */}
         {editingExpense && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 backdrop-blur-xs sm:items-center sm:p-6">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 p-3 pt-10 sm:p-6 backdrop-blur-xs flex min-h-full items-end sm:items-center justify-center">
             <form
               onSubmit={handleUpdateExpense}
-              className="w-full max-w-lg rounded-t-2xl bg-white p-6 shadow-2xl sm:rounded-2xl"
+              className="w-full max-w-lg my-auto rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh]"
             >
-              <div className="mb-5 flex items-start justify-between">
+              <div className="flex items-start justify-between p-5 sm:p-6 border-b border-slate-100 shrink-0">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">Edit Data Pengeluaran</h3>
                   <p className="mt-1 text-xs text-slate-500">
@@ -641,7 +701,7 @@ export default function FinanceClient({
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="overflow-y-auto p-5 sm:p-6 flex-1 space-y-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                     Kategori Pengeluaran *
@@ -747,7 +807,7 @@ export default function FinanceClient({
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50 shrink-0 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setEditingExpense(null)}

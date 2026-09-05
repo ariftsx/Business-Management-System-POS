@@ -365,7 +365,8 @@ export default async function Home() {
               Lihat semua transaksi
             </Link>
           </div>
-          <div className="overflow-x-auto">
+          {/* DESKTOP TABLE VIEW */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full min-w-[620px] text-left text-sm">
               <thead className="border-b border-slate-100 text-xs text-slate-400">
                 <tr>
@@ -431,6 +432,50 @@ export default async function Home() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* MOBILE CARD LIST VIEW */}
+          <div className="sm:hidden space-y-2.5">
+            {(latestTransactions ?? []).map((trx) => {
+              const timeStr = new Intl.DateTimeFormat("id-ID", {
+                hour: "2-digit",
+                minute: "2-digit",
+                day: "numeric",
+                month: "short",
+              }).format(new Date(trx.created_at));
+              return (
+                <div key={trx.id} className="rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <Link href={`/transaksi/${trx.id}`} className="font-bold text-blue-600 text-sm hover:underline">
+                        {trx.transaction_number}
+                      </Link>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{timeStr}</p>
+                    </div>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold shrink-0 ${
+                      trx.status === "PAID"
+                        ? "bg-green-100 text-green-700"
+                        : trx.status === "PENDING"
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-red-100 text-red-700"
+                    }`}>
+                      {trx.status === "PAID" ? "✓ Selesai" : trx.status === "PENDING" ? "Pending" : "Batal"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-slate-200/60 pt-2 text-xs">
+                    <span className="rounded-md bg-white border border-slate-200 px-2 py-0.5 text-slate-600 font-medium">
+                      {trx.payment_method}
+                    </span>
+                    <span className="font-bold text-slate-900 text-sm">{money(Number(trx.total))}</span>
+                  </div>
+                </div>
+              );
+            })}
+            {(!latestTransactions || latestTransactions.length === 0) && (
+              <div className="py-8 text-center text-sm text-slate-400">
+                Belum ada transaksi tercatat. Mulai transaksi baru di Kasir.
+              </div>
+            )}
           </div>
         </section>
       </div>
